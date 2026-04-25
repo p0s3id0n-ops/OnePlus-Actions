@@ -1,54 +1,147 @@
-# ⭐⭐⭐ Star This Project ⭐⭐⭐
+<div align="center">
 
-如果您觉得这个项目对您有帮助，请给我一个 ``Star`` 或 ``进行赞助``！您的支持是我持续改进的动力。❤❤❤
+# 🔥 Wild Kernels for OnePlus (Oppo/Realme)
 
-如果遇到问题欢迎提交``issue``！也随时欢迎``Pull Requests``！
+[![KernelSU](https://img.shields.io/badge/KernelSU-Supported-green)](https://kernelsu.org/)
+[![KernelSU-Next](https://img.shields.io/badge/KernelSU-Supported-green)](https://kernelsu-next.github.io/webpage/)
+[![SUSFS](https://img.shields.io/badge/SUSFS-Integrated-orange)](https://gitlab.com/simonpunk/susfs4ksu)
+[![KernelSU](https://img.shields.io/badge/KernelSU-Supported-green)](https://kernelsu.org/)
+[![OnePlusOSS Tracking Status](https://img.shields.io/badge/OnePlusOSS--Tracker-active-green)](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS/blob/status-page/README.md)
 
-[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/gki_kernels_xiaoxiaow) [![Coolapk](https://img.shields.io/badge/Follow-Coolapk-3DDC84?style=flat-square&logo=android&logoColor=white)](https://www.coolapk.com/u/24701380)
+</div>
 
-<img width="250" height="250" alt="image" src="https://github.com/user-attachments/assets/55acad97-8fe6-4de7-b9ce-90da9552a212" />
+---
 
-## OnePlus 开源地址
+## ⚠️ Disclaimer
 
-[![OnePlus Repository](https://img.shields.io/badge/OnePlus-Repository-red)](https://github.com/Xiaomichael/kernel_manifest)
+Flashing this kernel will not void your warranty, but there is always a risk of bricking your device. Please make sure to:
+- 💾 Back up your data
+- 🧠 Understand the risks before proceeding
 
-## 设备支持
+- I am **not responsible** for bricked devices, damaged hardware, or any issues that arise from using this kernel.
 
-支持欧加真内核版本 `5.10-6.6` 的设备，只要跑出来内核版本号一样(或大于的可以尝试一下)就可以用
+- **Please** do thorough research and fully understand the features added in this kernel before flashing it!
 
-内核版本为 `6.12` 的可以去这个 [专用仓库](https://github.com/Xiaomichael/oppo_oplus_realme_sm8850)
+- By flashing this kernel, **YOU** are choosing to make these modifications. If something goes wrong, **do not blame me**!
 
-## KernelSU管理器支持
+<div align="center">
+  
+# **🚨 Proceed at your own risk!**
 
-支持 ``ReSukiSU`` ``SukiSU Ultra`` ``KernelSU Next`` ``KernelSU Official``, 当然你也可以编译仅加入优化的 ``无 Root`` 内核
+</div>
 
-## 使用指南
+---
 
-### ① 分支选择
+## 🔧 Available Kernels
 
-1. 点击 `Branches` 切换处理器分支
-2. 选择适合您设备的配置 (Tips: 如果实在找不到代号名称去网上搜搜)
+<div align="center">
 
-<img width="376" height="77" alt="{B57A09D0-EC2F-4B86-9821-9C6CAC6435CF}" src="https://github.com/user-attachments/assets/0f97b652-b1e4-484d-90c0-9e36bc15cdf0" />
+| Kernel | Repository | Status |
+|--------|------------|--------|
+| 🏗️ **GKI** | [GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS) | ✅ Active |
+| 👑 **Sultan** | [Sultan_KernelSU_SUSFS](https://github.com/WildKernels/Sultan_KernelSU_SUSFS) | ✅ Active |
+| 📱 **OnePlus/Oppo/Realme** | [OnePlus_KernelSU_SUSFS](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS) | ✅ Active |
+| 📱 **Samsung** | [Samsung_KernelSU_SUSFS](https://github.com/WildKernels/Samsung_KernelSU_SUSFS) | ✅ Active |
+</div>
 
-### ② 配置文件说明
+---
 
-- `_b` 后缀：ColorOS/OxygenOS 16
-- `_v` 后缀：ColorOS/OxygenOS 15
-- `_u` 后缀：ColorOS/OxygenOS 14
-- `_t` 后缀：ColorOS/OxygenOS 13
+## 🔗 Additional Resources
 
-<img width="1122" height="257" alt="image" src="https://github.com/user-attachments/assets/24631b01-ec9d-4f77-a764-476cfe522537" />
+- 🩹 [Kernel Patches](https://github.com/WildKernels/kernel_patches)
+- ⚡ [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher)
 
-### ③ 配置开关建议
+---
 
-- **SUSFS选项**：SUSFS在编译时已经改为可选，看你的需求进行开关。近期上游在拉💩💩💩, 建议关闭
-- **KPM选项**：仅在 ``SukiSU Ultra`` ``ReSukiSU`` 支持开启，建议禁用以减少电量消耗，挂🐕去④
-- **lz4kd**：
-  - ``6.1系``内核：建议关闭该选项以获得更好的 `lz4 + zstd` 压缩方式
-  - ``6.6系``内核：建议关闭该选项以获得更好的 `lz4` 压缩方式
-  - ``5.10 - 5.15系``内核：建议保持开启
-- **BBR算法**：对手机日用无太大意义甚至可能``负优化``，推荐关闭
-- **BBG基带守护**: 推荐开启，看名字就知道是干啥的
-- **⚠️代理优化**: 骁龙芯片可以开，联发科芯片 `千万不要开` ，否则出现恶性Bug！
-- **是否添加Unicode零宽绕过修复补丁**: 仅推荐内核KMI版本为``android12-5.10``开启, ``5.15 - 6.12``可以使用 [这个 LSPosed 模块](https://t.me/real5ec1cff/271) 无痛修复
+## 📱 Device Compatibility
+
+- Please verify the device compatibility before flashing here: [Compatibility_Info](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS/blob/main/compatibility.md). 
+
+---
+
+## 📱 OnePlusOSS Repositories Tracking
+
+- 📊 **Live Dashboard**: [OnePlus Repos Tracking & Changes](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS/blob/status-page/README.md)
+- ⏱️ **Update Frequency**: Every 2 hours (Automated)
+---
+
+## ✨ Features
+
+- 🔐 **KernelSU / KernelSU-Next**: A root solution for Android GKI devices that works in kernel mode and grants root permission to userspace applications directly in kernel space
+- 🔥 **WildKSU Manager Support**: Support for the Root Manager developed by our team with lots of customisations
+- 🥷 **SUSFS**: An addon root hiding kernel patches and userspace module for KernelSU
+- 🛡️ **BBG**: LSM-based Baseband Guard security to protect critical device partitions
+- 🛠️ **HMBIRD SCX**: Scheduler extensions for SM8750/MT6991 devices
+- 🖧 **BBRv1**: Improved TCP congestion control
+- ✅ **LTO**: Link Time Optimisation enabled
+- 🚀 **Optimisation patches**: Memory, I/O, CPU scheduler, network and other general tunings
+- 🌐 **TTL Target Support**: Network packet manipulation
+- 🧱 **IP Set & IPv6 NAT Support**: Advanced firewall capabilities and IPv6 NAT Support
+- ⚡️ **TMPFS XATTR / POSIX ACL**: Extended TMPFS support for meta modules and Mountify
+- </> **Unicode Bypass Fix**: Prevent path traversal and other detections using non-printable Unicode codepoints [Experimental]
+- 🖥️ **Droidspaces Support**: Support Portable Linux containers to run full Linux environments.
+- 🔃 **NTSync**: Provide high-performance, low-latency synchronization primitives compatible with the Windows NT kernel API
+
+---
+
+## 📋 Installation Instructions
+
+For GKI installation, please follow the official guide:
+
+📖 **[KernelSU Installation Guide](https://kernelsu.org/guide/installation.html)**
+
+You can also find Installation instructions in the release notes.
+
+---
+
+## 🌟 Special Thanks
+
+**These amazing people help make this project possible! ❤️**
+
+<div align="center">
+
+
+| 🔧 **Project** | 👨‍💻 **Developer** | 🔗 **Link** |
+|:---------------:|:----------------:|:-----------:|
+| **KernelSU** | tiann | [![GitHub](https://img.shields.io/badge/GitHub-tiann-blue?style=flat-square&logo=github)](https://github.com/tiann/KernelSU) |
+| **KernelSU-Next** | rifsxd | [![GitHub](https://img.shields.io/badge/GitHub-rifsxd-blue?style=flat-square&logo=github)](https://github.com/KernelSU-Next/KernelSU-Next) |
+| **Magic-KSU** | 5ec1cff | [![GitHub](https://img.shields.io/badge/GitHub-5ec1cff-blue?style=flat-square&logo=github)](https://github.com/5ec1cff/KernelSU) |
+| **SUSFS** | simonpunk | [![GitLab](https://img.shields.io/badge/GitLab-simonpunk-orange?style=flat-square&logo=gitlab)](https://gitlab.com/simonpunk/susfs4ksu.git) |
+| **SUSFS Module** | sidex15 | [![GitHub](https://img.shields.io/badge/GitHub-sidex15-blue?style=flat-square&logo=github)](https://github.com/sidex15) |
+| **Sultan Kernels** | kerneltoast | [![GitHub](https://img.shields.io/badge/GitHub-kerneltoast-blue?style=flat-square&logo=github)](https://github.com/kerneltoast) |
+| **Baseband Guard** | vc-teahouse | [![GitHub](https://img.shields.io/badge/GitHub-vc--teahouse-blue?style=flat-square&logo=github)](https://github.com/vc-teahouse/Baseband-guard.git) |
+| **Droidspaces** | ravindu644 | [![GitHub](https://img.shields.io/badge/GitHub-ravindu644-blue?style=flat-square&logo=github)](https://github.com/ravindu644/Droidspaces-OSS.git) |
+
+</div>
+
+*If you have contributed and are not listed here, please remind me!* 🙏
+
+---
+
+## 💬 Support
+
+If you encounter any issues or need help, feel free to:
+- 🐛 Open an issue in this repository
+- 💬 Reach out to me directly
+
+---
+
+## 📱 Connect With Us
+
+<div align="center">
+  
+[![Telegram](https://img.shields.io/badge/Telegram-fatalcoder524-blue?logo=telegram)](https://t.me/anonymous_yolo)
+[![Telegram Group](https://img.shields.io/badge/Telegram-WildKernels-blue?logo=telegram)](https://t.me/WildKernelsTG)
+
+</div>
+
+---
+
+## 💝 Donations
+
+Any and all donations are appreciated!
+
+PayPal: [paypal.me/fatalcoder524](https://paypal.me/fatalcoder524)
+
+DM on Telegram for UPI donations!
+

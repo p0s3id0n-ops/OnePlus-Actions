@@ -160,6 +160,65 @@ jobs:
       CCACHE_MAXSIZE: 8G
       
     steps:
+      - name: "📂 Checkout Repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🏷️ Khởi tạo Tag Release Tự động (Chống Trùng Lặp)"
+        id: calc_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_BASE="v2.1.0"
+          echo "🔍 Đang tìm Tag phù hợp cho $TAG_BASE..."
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          SUCCESS=false
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            # Quét trực tiếp bằng Git để đếm Tag chính xác 100%
+            LATEST_TAG=$(git ls-remote --tags origin | grep -o "refs/tags/.*" | sed 's|refs/tags/||' | sed 's/\^{}//' | grep "^${TAG_BASE}-r" | sort -V | tail -n 1 || true)
+            
+            if [ -z "$LATEST_TAG" ]; then
+              NEW_TAG="${TAG_BASE}-r1"
+              NEW_REV="1"
+            else
+              CURRENT_NUM=$(echo "$LATEST_TAG" | awk -F'-r' '{print $NF}')
+              if [[ "$CURRENT_NUM" =~ ^[0-9]+$ ]]; then
+                NEW_REV=$((CURRENT_NUM + 1))
+                NEW_TAG="${TAG_BASE}-r${NEW_REV}"
+              else
+                NEW_TAG="${TAG_BASE}-r1"
+                NEW_REV="1"
+              fi
+            fi
+            
+            git tag "$NEW_TAG"
+            if git push origin "$NEW_TAG" 2>/dev/null; then
+              echo "✅ Đã giữ chỗ thành công Tag: $NEW_TAG"
+              SUCCESS=true
+              break
+            else
+              echo "⚠️ Tag $NEW_TAG đã bị tiến trình khác chiếm mất! Đang tính toán lại..."
+              git tag -d "$NEW_TAG" || true
+              git fetch --tags origin
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              sleep 3
+            fi
+          done
+          
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ Không thể giữ chỗ Tag sau $MAX_RETRIES lần thử. Vui lòng chạy lại."
+            exit 1
+          fi
+          
+          echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
+          echo "RELEASE_REV=$NEW_REV" >> $GITHUB_ENV
       - name: "🧹 Tối Đa Hóa Không Gian Đĩa (Maximize Space)"
         if: ${{ inputs.KERNEL_VERSION == '5.10' || inputs.KERNEL_VERSION == '5.15' }}
         uses: easimon/maximize-build-space@master
@@ -609,19 +668,15 @@ jobs:
       - name: "🏷️ Đặt Tên Artifact Tự Động Theo Yêu Cầu"
         id: set_name
         run: |
-          # Trích xuất phiên bản Kernel chính xác (VD: 6.1.118) từ Makefile
           cd kernel_workspace/kernel_platform/common
           K_VER=$(grep "^VERSION" Makefile | head -n 1 | cut -d '=' -f 2 | tr -d ' ')
           K_PATCH=$(grep "^PATCHLEVEL" Makefile | head -n 1 | cut -d '=' -f 2 | tr -d ' ')
           K_SUB=$(grep "^SUBLEVEL" Makefile | head -n 1 | cut -d '=' -f 2 | tr -d ' ')
           FULL_KVER="${K_VER}.${K_PATCH}.${K_SUB}"
-          
-          # Lưu FULL_KVER ra GITHUB_ENV để bước tạo Log xài
           echo "FULL_KVER=$FULL_KVER" >> $GITHUB_ENV
           
-          REV="${{ steps.calc_release.outputs.NEW_REV }}"
+          REV="${{ env.RELEASE_REV }}"
           
-          # Áp dụng định dạng: PSD_{Kernel}_ReSukiSU_{Compression}_v{KSUVER}
           if [ "${{ inputs.lz4kd }}" = "On" ]; then
             BASE_NAME="PSD_${FULL_KVER}_ReSukiSU_v${{ env.KSUVER }}_lz4kd"
           elif [ "${{ inputs.KERNEL_VERSION }}" = "6.1" ]; then
@@ -632,9 +687,8 @@ jobs:
             BASE_NAME="PSD_${FULL_KVER}_ReSukiSU_v${{ env.KSUVER }}"
           fi
           
-          # Gắn thêm _SuSFS (nếu có) và _r{số_release}
           if [ "${{ inputs.SUSFS }}" = "On" ]; then
-            FINAL_NAME="${BASE_NAME}_SuSFS_v2.1.0_r${REV}"
+            FINAL_NAME="${BASE_NAME}_SuSFS_v2.2.0_r${REV}"
           else
             FINAL_NAME="${BASE_NAME}_r${REV}"
           fi
@@ -651,16 +705,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_TAG="${{ steps.calc_release.outputs.NEW_TAG }}"
-          echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
-          
+          NEW_TAG="${{ env.RELEASE_TAG }}"
           ZIP_NAME="${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
           cd AnyKernel3
           
-          # 1. Nén file zip trước
           zip -r9 ../$ZIP_NAME *
           
-          # 2. Tạo file ak3.log với các thông số của p0s3id0n
           cat <<EOF > ak3.log
           ====================================
           🔥 OKI ReSukiSU Kernel Build Log 🔥
@@ -685,9 +735,7 @@ jobs:
           ====================================
           EOF
           
-          # 3. Ghi log vào file ZIP dưới dạng ZIP Comment
           zip -z ../$ZIP_NAME < ak3.log
-          
           cd ..
           
           echo "📦 Bắt đầu tải lên Release..."
@@ -703,6 +751,16 @@ jobs:
             - **KPM**: ${{ inputs.KPM }}"
             
           echo "✅ Release tạo thành công!"
+          
+      - name: "🗑️ Xóa Tag giữ chỗ nếu Build thất bại"
+        if: failure() || cancelled()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "${{ env.RELEASE_TAG }}" ]; then
+            echo "🗑️ Thu hồi Tag ${{ env.RELEASE_TAG }} do tiến trình lỗi hoặc bị hủy..."
+            git push --delete origin "${{ env.RELEASE_TAG }}" || true
+          fi
 
       - name: "📱 Gửi Thông Báo Đến Telegram"
         if: always()
@@ -727,4 +785,5 @@ jobs:
             -d parse_mode="Markdown" \
             -d text="$MESSAGE"
           echo "✅ Đã gửi thông báo Telegram!"
+      
       
