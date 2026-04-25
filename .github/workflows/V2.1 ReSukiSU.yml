@@ -575,30 +575,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Tìm release có tag bắt đầu bằng 'v' (VD: v1.0-r1)
-          LATEST_TAG=$(gh release list --repo ${{ github.repository }} | awk '{print $1}' | grep '^v' | head -n 1)
+          echo "🔍 Đang tìm kiếm Release Tag mới nhất..."
+          
+          # Lấy danh sách TẤT CẢ các release tags, lọc lấy những tag bắt đầu bằng 'v1.0-r'
+          # Sau đó dùng sort -V để sắp xếp theo số tự nhiên, và tail -n 1 để lấy dòng cuối cùng (số lớn nhất)
+          LATEST_TAG=$(gh release list --repo ${{ github.repository }} --exclude-drafts --exclude-pre-releases | awk '{print $1}' | grep '^v1\.0-r' | sort -V | tail -n 1)
           
           if [ -z "$LATEST_TAG" ]; then
-            # Nếu không tìm thấy tag nào hợp lệ, bắt đầu từ v1.0-r1
+            # Nếu thật sự chưa có tag nào dạng v1.0-rX, ta bắt đầu từ v1.0-r1
             NEW_TAG="v1.0-r1"
             NEW_REV="1"
             echo "ℹ️ Không tìm thấy Tag hợp lệ trước đó. Khởi tạo: $NEW_TAG"
           else
-            # Lấy phần đầu (VD: v1.0)
-            BASE_TAG="${LATEST_TAG%-r*}"
-            # Lấy phần số revision (VD: 1)
-            REV="${LATEST_TAG##*-r}"
+            # Lấy số revision hiện tại (Cắt bỏ phần 'v1.0-r')
+            REV="${LATEST_TAG#v1.0-r}"
             
-            # Kiểm tra xem REV có phải là số nguyên không, nếu không thì mặc định là 0
+            # Đảm bảo REV là một con số, nếu không thì ép về 0
             if ! [[ "$REV" =~ ^[0-9]+$ ]]; then 
               REV=0
-              # Nếu tag cũ không có -r (VD chỉ là v1.0), giữ nguyên BASE_TAG
-              BASE_TAG="$LATEST_TAG" 
             fi
             
             NEW_REV=$((REV + 1))
-            NEW_TAG="${BASE_TAG}-r${NEW_REV}"
-            echo "ℹ️ Tag trước đó: $LATEST_TAG. Tạo Tag mới: $NEW_TAG"
+            NEW_TAG="v1.0-r${NEW_REV}"
+            echo "ℹ️ Tag cao nhất hiện tại: $LATEST_TAG. Tạo Tag mới: $NEW_TAG"
           fi
           
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_OUTPUT
