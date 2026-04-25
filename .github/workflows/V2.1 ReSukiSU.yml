@@ -465,7 +465,7 @@ jobs:
           fi
 
           if [ "${{ inputs.proxy }}" == "On" ]; then
-            echo "⚡ Bật cờ tối ưu Proxy..."
+            echo "⚡ Bật tối ưu Proxy..."
             cat <<EOF >> $CONFIG_FILE
           CONFIG_BPF_STREAM_PARSER=y
           CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
@@ -506,7 +506,7 @@ jobs:
           
       - name: "🔨 Bắt Đầu Build Kernel"
         run: |
-          echo "🔥 Nấu Kernel thôi..."
+          echo "🔥 Bắt đầu build Kernel ..."
           export KBUILD_BUILD_USER="p0s3id0n"
           export KBUILD_BUILD_HOST="p0s3id0n_build"
 
