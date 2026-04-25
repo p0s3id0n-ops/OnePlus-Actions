@@ -90,7 +90,7 @@ on:
         options:
           - 'On'
           - 'Off'
-        default: 'Off'
+        default: 'On'
 
       KPM:
         description: "🧩 Tích hợp KPM (Kernel Patch Module)"
@@ -126,7 +126,7 @@ on:
         options:
           - 'On'
           - 'Off'
-        default: 'Off'
+        default: 'On'
 
       proxy:
         description: "⚡ Tối ưu Proxy (CẢNH BÁO: Tắt nếu dùng chip MediaTek)"
