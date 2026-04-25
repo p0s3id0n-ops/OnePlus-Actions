@@ -121,11 +121,11 @@ sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/msm-ker
 sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/external/dtc/scripts/setlocalversion
 
 if [ "$KERNEL_VERSION" != "6.6" ]; then
-  sed -i '$s|echo "\$res"|echo "-'"$adv"'-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion
-  sed -i '$s|echo "\$res"|echo "-'"$adv"'-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
-  sed -i '$s|echo "\$res"|echo "-'"$adv"'-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+  sed -i '$s|echo "\$res"|echo "-'"$adv"'-o-p0s3id0n"|' kernel_platform/common/scripts/setlocalversion
+  sed -i '$s|echo "\$res"|echo "-'"$adv"'-o-p0s3id0n"|' kernel_platform/msm-kernel/scripts/setlocalversion
+  sed -i '$s|echo "\$res"|echo "-'"$adv"'-o-p0s3id0n"|' kernel_platform/external/dtc/scripts/setlocalversion
 else
-  ESCAPED_SUFFIX=$(printf '%s\n' "-${ANDROID_VERSION}-oki-xiaoxiaow" | sed 's:[\/&]:\\&:g')
+  ESCAPED_SUFFIX=$(printf '%s\n' "-${ANDROID_VERSION}-o-p0s3id0n" | sed 's:[\/&]:\\&:g')
   sed -i "s/-4k/${ESCAPED_SUFFIX}/g" kernel_platform/common/arch/arm64/configs/gki_defconfig
   sed -i 's/\${scm_version}//' kernel_platform/common/scripts/setlocalversion
   sed -i 's/\${scm_version}//' kernel_platform/msm-kernel/scripts/setlocalversion
@@ -153,7 +153,7 @@ export KSUVER=$(expr $KSU_VERSION_COUNT + 37185)
 KSU_API_VERSION=4.1.2
 
 KSU_COMMIT_HASH=$(git ls-remote https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/builtin | cut -f1 | cut -c1-8)
-KSU_VERSION_FULL="v${KSU_API_VERSION}-${KSU_COMMIT_HASH}-xiaoxiaow@SukiSU"
+KSU_VERSION_FULL="v${KSU_API_VERSION}-${KSU_COMMIT_HASH}-p0s3id0n@PSD"
 
 sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
 sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
@@ -165,7 +165,7 @@ while IFS= read -r line; do
   if echo "$line" | grep -q 'REPO_OWNER :='; then
     cat >> "$TMP_FILE" <<EOF
 define get_ksu_version_full
-v\\\$\$1-${KSU_COMMIT_HASH}-xiaoxiaow@SukiSU
+v\\\$\$1-${KSU_COMMIT_HASH}-p0s3id0n@PSD
 endef
 
 KSU_VERSION_API := ${KSU_API_VERSION}
@@ -396,8 +396,8 @@ cd "$WORKSPACE/kernel_workspace/kernel_platform/common"
 
 MAKE_CMD_COMMON="make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=\"ccache clang\" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out gki_defconfig all"
 
-export KBUILD_BUILD_USER="xiaoxiaow"
-export KBUILD_BUILD_HOST="xiaoxiaow_build"
+export KBUILD_BUILD_USER="p0s3id0n"
+export KBUILD_BUILD_HOST="p0s3id0n_build"
 
 if [ "$KERNEL_VERSION" = "6.1" ]; then
     export KBUILD_BUILD_TIMESTAMP="Tue Mar 10 03:53:33 UTC 2026"
