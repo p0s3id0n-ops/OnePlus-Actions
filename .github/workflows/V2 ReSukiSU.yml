@@ -146,7 +146,6 @@ on:
           - 'Off'
         default: 'Off'
 
-# Thêm quyền cho GITHUB_TOKEN để có thể tạo Release
 permissions:
   contents: write
 
@@ -243,7 +242,7 @@ jobs:
         run: |
           mkdir kernel_workspace && cd kernel_workspace
           echo "🌐 Khởi tạo manifest kernel..."
-          repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ inputs.CPU }} -m ${{ inputs.FEIL }}.xml --depth=1
+          repo init -u https://github.com/p0s3id0n-ops/kernel_manifest.git -b refs/heads/oneplus/${{ inputs.CPU }} -m ${{ inputs.FEIL }}.xml --depth=1
 
           echo "🔄 Đang đồng bộ mã nguồn (Đa luồng)..."
           repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
@@ -298,9 +297,9 @@ jobs:
           echo "📦 BƯỚC 1: TẢI CÁC PATCH CẦN THIẾT TỪ GITHUB"
           echo "========================================================="
           if [ "${{ inputs.SUSFS }}" == "On" ]; then          
-            git clone https://github.com/p0s3id0nVN/susfs4oki.git -b oki-${{ inputs.ANDROID_VERSION }}-${{ inputs.KERNEL_VERSION }}
+            git clone https://github.com/cctv18/susfs4oki.git -b oki-${{ inputs.ANDROID_VERSION }}-${{ inputs.KERNEL_VERSION }}
           fi
-          git clone https://github.com/Xiaomichael/kernel_patches.git
+          git clone https://github.com/p0s3id0n-ops/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
           
           cd kernel_platform
@@ -313,12 +312,10 @@ jobs:
             cp ../kernel_patches/sukisu/scope_min_manual_hooks_v1.9.patch ./common/
           fi
           
-          # Patch ZRAM mặc định
           cp ../kernel_patches/zram_patches/001-lz4.patch ./common/
           cp ../kernel_patches/zram_patches/lz4armv8.S ./common/lib
           cp ../kernel_patches/zram_patches/002-zstd.patch ./common/
 
-          # Patch Unicode
           if [ "${{ inputs.UNICODE_BYPASS }}" = "On" ]; then
             if [ "${{ inputs.KERNEL_VERSION }}" = "6.1" ] || [ "${{ inputs.KERNEL_VERSION }}" = "6.6" ]; then
               cp ../kernel_patches/common/unicode_bypass_fix_6.1+.patch ./common/unicode_bypass_fix.patch
@@ -327,7 +324,6 @@ jobs:
             fi
           fi
 
-          # Patch LZ4KD
           if [ "${{ inputs.lz4kd }}" == "On" ]; then
             cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./common/include/linux
             cp -r ../SukiSU_patch/other/zram/lz4k/lib/* ./common/lib
@@ -338,7 +334,7 @@ jobs:
           cd ./common
 
           echo "========================================================="
-          echo "🚀 BƯỚC 2: APPLY (BƠM) CÁC PATCH VÀO KERNEL"
+          echo "🚀 BƯỚC 2: APPLY CÁC PATCH VÀO KERNEL"
           echo "========================================================="
 
           if [ "${{ inputs.UNICODE_BYPASS }}" = "On" ]; then
@@ -366,19 +362,19 @@ jobs:
           fi
 
           if [ "${{ inputs.SUSFS }}" == "On" ]; then
-            echo "🛡️ [NHÁNH SU]: Đang vá Kernel SU với ẩn rễ SUSFS..."
+            echo "🛡️ [NHÁNH SU]: Đang vá KernelSU với SuSFS..."
             patch -p1 < 50_add_susfs_in_gki-${{ inputs.ANDROID_VERSION }}-${{ inputs.KERNEL_VERSION }}.patch || true
           else
-            echo "⚓ [NHÁNH SU]: Chạy Manual Hook truyền thống (Không SUSFS)..."
+            echo "⚓ [NHÁNH SU]: Chạy Manual Hook truyền thống (Không SuSFS)..."
             patch -p1 -F 3 < scope_min_manual_hooks_v1.9.patch
           fi
-          echo "✅ HOÀN TẤT BƠM PATCH"
+          echo "✅ HOÀN TẤT PATCH"
 
-      - name: "🏎️ Tích Hợp Phong Trì (SCHED Patch)"
+      - name: "🏎️ Tích Hợp SCHED PATCH"
         if: ${{ inputs.KERNEL_VERSION == '6.6' }}
         run: |
           cd kernel_workspace/kernel_platform/common
-          echo "⬇️ Đang lấy patch Phong Trì (Fengchi) cho trải nghiệm mượt mà..."
+          echo "⬇️ Đang lấy SCHED_PATCH cho trải nghiệm mượt mà..."
           if [ "${{ inputs.FEIL }}" == "oneplus_ace5_ultra" ] || [ "${{ inputs.FEIL }}" = "oneplus_ace5_ultra_b" ]; then
               echo "⚠️ Phát hiện máy Ace5 Ultra -> Dùng nhánh mt6991"
               git clone https://github.com/Numbersf/SCHED_PATCH.git -b "mt6991"
@@ -393,13 +389,13 @@ jobs:
             echo "⚙️ Bơm patch Fengchi..."
             dos2unix "fengchi_${{ inputs.FEIL }}.patch"
             patch -p1 -F 3 < "fengchi_${{ inputs.FEIL }}.patch"
-            echo "✅ Apply Phong Trì hoàn hảo!"
+            echo "✅ Apply SCHED PATCH hoàn hảo!"
           else
             sed -i '1iobj-y += hmbird_patch.o' drivers/Makefile
             wget https://github.com/Numbersf/Action-Build/raw/SukiSU-Ultra/patches/hmbird_patch.patch
             echo "⚙️ Bơm patch OGKI -> GKI..."
             patch -p1 -F 3 < hmbird_patch.patch
-            echo "✅ Cài đặt OGKI Patch xong!"
+            echo "✅ Đã Apply OKI Patch xong!"
           fi
           
       - name: "🛠 Cấu Hình Thông Số Defconfig Kernel"
@@ -412,7 +408,6 @@ jobs:
           # ./resukisu_setup.bin
           # rm -rf ./resukisu_setup.bin
           
-          # Cấu trúc ghi configs
           CONFIG_FILE="./common/arch/arm64/configs/gki_defconfig"
 
           if [ "${{ inputs.KPM }}" == "On" ]; then
@@ -552,7 +547,7 @@ jobs:
       - name: "🎁 Đóng Gói Với AnyKernel3"
         run: |
           echo "📦 Chuẩn bị AnyKernel3..."
-          git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
+          git clone https://github.com/p0s3id0n-ops/AK3-p0s3id0n-ops AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
           mkdir -p kernel_workspace/kernel_platform/out/Final-Image-Find/
           image_path=$(find "./kernel_workspace/kernel_platform/common/out/" -name "Image" | head -n 1)
@@ -575,23 +570,53 @@ jobs:
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           echo "✅ Vá KPM hoàn tất!"
 
-      - name: "🏷️ Đặt Tên Artifact Tự Động"
+      - name: "🔍 Tính Toán Phiên Bản Release (Tag & Rev)"
+        id: calc_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST_TAG=$(gh release list --repo ${{ github.repository }} --limit 1 | awk '{print $1}')
+          if [ -z "$LATEST_TAG" ]; then
+            NEW_TAG="v1.0-r1"
+            NEW_REV="1"
+          else
+            BASE_TAG="${LATEST_TAG%-r*}"
+            REV="${LATEST_TAG##*-r}"
+            if ! [[ "$REV" =~ ^[0-9]+$ ]]; then REV=0; fi
+            NEW_REV=$((REV + 1))
+            NEW_TAG="${BASE_TAG}-r${NEW_REV}"
+          fi
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "NEW_REV=$NEW_REV" >> $GITHUB_OUTPUT
+
+      - name: "🏷️ Đặt Tên Artifact Tự Động Theo Yêu Cầu"
         id: set_name
         run: |
+          # Trích xuất phiên bản Kernel chính xác (VD: 6.1.118) từ Makefile
+          cd kernel_workspace/kernel_platform/common
+          K_VER=$(grep "^VERSION" Makefile | head -n 1 | cut -d '=' -f 2 | tr -d ' ')
+          K_PATCH=$(grep "^PATCHLEVEL" Makefile | head -n 1 | cut -d '=' -f 2 | tr -d ' ')
+          K_SUB=$(grep "^SUBLEVEL" Makefile | head -n 1 | cut -d '=' -f 2 | tr -d ' ')
+          FULL_KVER="${K_VER}.${K_PATCH}.${K_SUB}"
+          
+          REV="${{ steps.calc_release.outputs.NEW_REV }}"
+          
+          # Áp dụng định dạng: PSD_{Kernel}_ReSukiSU_{Compression}_v{KSUVER}
           if [ "${{ inputs.lz4kd }}" = "On" ]; then
-            BASE_NAME="${{ inputs.FEIL }}_ReSukiSU_lz4kd_${{ env.KSUVER }}"
+            BASE_NAME="PSD_${FULL_KVER}_ReSukiSU_lz4kd_v${{ env.KSUVER }}"
           elif [ "${{ inputs.KERNEL_VERSION }}" = "6.1" ]; then
-            BASE_NAME="${{ inputs.FEIL }}_ReSukiSU_lz4_zstd_${{ env.KSUVER }}"
+            BASE_NAME="PSD_${FULL_KVER}_ReSukiSU_lz4_zstd_v${{ env.KSUVER }}"
           elif [ "${{ inputs.KERNEL_VERSION }}" = "6.6" ]; then
-            BASE_NAME="${{ inputs.FEIL }}_ReSukiSU_lz4_${{ env.KSUVER }}"
+            BASE_NAME="PSD_${FULL_KVER}_ReSukiSU_lz4_v${{ env.KSUVER }}"
           else
-            BASE_NAME="${{ inputs.FEIL }}_ReSukiSU_${{ env.KSUVER }}"
+            BASE_NAME="PSD_${FULL_KVER}_ReSukiSU_v${{ env.KSUVER }}"
           fi
           
+          # Gắn thêm _SuSFS (nếu có) và _r{số_release}
           if [ "${{ inputs.SUSFS }}" = "On" ]; then
-            FINAL_NAME="${BASE_NAME}_SuSFS"
+            FINAL_NAME="${BASE_NAME}_SuSFS_r${REV}"
           else
-            FINAL_NAME="${BASE_NAME}"
+            FINAL_NAME="${BASE_NAME}_r${REV}"
           fi
           
           echo "ARTIFACT_NAME=${FINAL_NAME}" >> $GITHUB_OUTPUT
@@ -602,41 +627,25 @@ jobs:
           name: ${{ steps.set_name.outputs.ARTIFACT_NAME }}
           path: ./AnyKernel3/*
 
-      - name: "🚀 Tạo GitHub Release Thông Minh Tự Tăng Version (-r+1)"
+      - name: "🚀 Tạo GitHub Release & Upload File Zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "🔍 Đang check Release Tag gần nhất..."
-          
-          # ĐÃ SỬA: Thêm --repo ${{ github.repository }} để chỉ rõ đích đến
-          LATEST_TAG=$(gh release list --repo ${{ github.repository }} --limit 1 | awk '{print $1}')
-          
-          if [ -z "$LATEST_TAG" ]; then
-            NEW_TAG="v1.0-r1"
-          else
-            BASE_TAG="${LATEST_TAG%-r*}"
-            REV="${LATEST_TAG##*-r}"
-            # Đảm bảo số revision là số nguyên
-            if ! [[ "$REV" =~ ^[0-9]+$ ]]; then REV=0; fi
-            NEW_REV=$((REV + 1))
-            NEW_TAG="${BASE_TAG}-r${NEW_REV}"
-          fi
-          
-          echo "🏷️ Sắp tạo Release với Tag: $NEW_TAG"
+          NEW_TAG="${{ steps.calc_release.outputs.NEW_TAG }}"
           echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
           
-          # Nén file zip
+          # Nén file zip sử dụng tên đã chuẩn hoá (có đuôi .zip)
+          ZIP_NAME="${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
           cd AnyKernel3
-          zip -r9 ../AnyKernel3-${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip *
+          zip -r9 ../$ZIP_NAME *
           cd ..
           
           echo "📦 Bắt đầu bắn lên Release..."
-          
-          # ĐÃ SỬA: Thêm --repo ${{ github.repository }} vào lệnh tạo Release
-          gh release create "$NEW_TAG" ./AnyKernel3-${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip \
+          gh release create "$NEW_TAG" ./$ZIP_NAME \
             --repo ${{ github.repository }} \
             --title "🔥 OKI ReSukiSU Kernel - ${{ inputs.FEIL }} ($NEW_TAG)" \
             --notes "Bản build OKI tự động.
+            - **Máy (Thiết bị)**: ${{ inputs.FEIL }}
             - **CPU**: ${{ inputs.CPU }}
             - **Kernel Version**: ${{ inputs.KERNEL_VERSION }}
             - **KSU Version**: ${{ env.KSUVER }}
@@ -663,7 +672,6 @@ jobs:
           🔗 [Tải Xuống Ngay Tại Đây](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.RELEASE_TAG }})
           ━━━━━━━━━━━━━━━━━━"
           
-          # Đảm bảo bạn đã thêm TELEGRAM_TOKEN và TELEGRAM_CHAT_ID trong phần Secrets của kho lưu trữ GitHub
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
             -d parse_mode="Markdown" \
