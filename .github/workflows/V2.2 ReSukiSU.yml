@@ -634,7 +634,7 @@ jobs:
           
           # Gắn thêm _SuSFS (nếu có) và _r{số_release}
           if [ "${{ inputs.SUSFS }}" = "On" ]; then
-            FINAL_NAME="${BASE_NAME}_SuSFS_r${REV}"
+            FINAL_NAME="${BASE_NAME}_SuSFS_v2.1.0_r${REV}"
           else
             FINAL_NAME="${BASE_NAME}_r${REV}"
           fi
