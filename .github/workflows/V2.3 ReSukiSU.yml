@@ -1,4 +1,4 @@
-name: 🚀 V2.2 OKI ReSukiSU
+name: 🚀 V2.3 OKI ReSukiSU
 on:
   workflow_dispatch:
     inputs:
@@ -160,6 +160,66 @@ jobs:
       CCACHE_MAXSIZE: 8G
       
     steps:
+      - name: "📂 Checkout Repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🏷️ Khởi tạo Tag Release Tự động (Chống Trùng Lặp)"
+        id: calc_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_BASE="v2.2.0"
+          echo "🔍 Đang tìm Tag phù hợp cho $TAG_BASE..."
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          SUCCESS=false
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            # Quét trực tiếp bằng Git để đếm Tag chính xác 100%
+            LATEST_TAG=$(git ls-remote --tags origin | grep -o "refs/tags/.*" | sed 's|refs/tags/||' | sed 's/\^{}//' | grep "^${TAG_BASE}-r" | sort -V | tail -n 1 || true)
+            
+            if [ -z "$LATEST_TAG" ]; then
+              NEW_TAG="${TAG_BASE}-r1"
+              NEW_REV="1"
+            else
+              CURRENT_NUM=$(echo "$LATEST_TAG" | awk -F'-r' '{print $NF}')
+              if [[ "$CURRENT_NUM" =~ ^[0-9]+$ ]]; then
+                NEW_REV=$((CURRENT_NUM + 1))
+                NEW_TAG="${TAG_BASE}-r${NEW_REV}"
+              else
+                NEW_TAG="${TAG_BASE}-r1"
+                NEW_REV="1"
+              fi
+            fi
+            
+            git tag "$NEW_TAG"
+            if git push origin "$NEW_TAG" 2>/dev/null; then
+              echo "✅ Đã giữ chỗ thành công Tag: $NEW_TAG"
+              SUCCESS=true
+              break
+            else
+              echo "⚠️ Tag $NEW_TAG đã bị tiến trình khác chiếm mất! Đang tính toán lại..."
+              git tag -d "$NEW_TAG" || true
+              git fetch --tags origin
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              sleep 3
+            fi
+          done
+          
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ Không thể giữ chỗ Tag sau $MAX_RETRIES lần thử. Vui lòng chạy lại."
+            exit 1
+          fi
+          
+          echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
+          echo "RELEASE_REV=$NEW_REV" >> $GITHUB_ENV
+
       - name: "🧹 Tối Đa Hóa Không Gian Đĩa (Maximize Space)"
         if: ${{ inputs.KERNEL_VERSION == '5.10' || inputs.KERNEL_VERSION == '5.15' }}
         uses: easimon/maximize-build-space@master
@@ -283,7 +343,6 @@ jobs:
         run: |
           cd kernel_workspace/kernel_platform
           echo "🛠️ Đang tải kịch bản ReSukiSU..."
-          # curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s main
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/refs/heads/main/kernel/setup.sh" | bash -s main
           echo 'CONFIG_KSU_FULL_NAME_FORMAT="%TAG_NAME%-%COMMIT_SHA%@PSD"' >> ./common/arch/arm64/configs/gki_defconfig
           
@@ -405,11 +464,6 @@ jobs:
         run: |
           cd kernel_workspace/kernel_platform
           echo "⚙️ Chỉnh sửa file gki_defconfig..."
-          
-          # curl -L -o resukisu_setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/resukisu_setup.bin
-          # chmod +x resukisu_setup.bin
-          # ./resukisu_setup.bin
-          # rm -rf ./resukisu_setup.bin
           
           CONFIG_FILE="./common/arch/arm64/configs/gki_defconfig"
 
@@ -573,39 +627,6 @@ jobs:
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           echo "✅ Vá KPM hoàn tất!"
 
-      - name: "🔍 Chuẩn Bị Phiên Bản Release (Tag & Rev)"
-        id: calc_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "🔍 Đang tìm kiếm Release Tag mới nhất..."
-          
-          # Lấy danh sách TẤT CẢ các release tags, lọc lấy những tag bắt đầu bằng 'v1.0-r'
-          # Sau đó dùng sort -V để sắp xếp theo số tự nhiên, và tail -n 1 để lấy dòng cuối cùng (số lớn nhất)
-          LATEST_TAG=$(gh release list --repo ${{ github.repository }} --exclude-drafts --exclude-pre-releases | awk '{print $1}' | grep '^v1\.0-r' | sort -V | tail -n 1)
-          
-          if [ -z "$LATEST_TAG" ]; then
-            # Nếu thật sự chưa có tag nào dạng v1.0-rX, ta bắt đầu từ v1.0-r1
-            NEW_TAG="v2.1.0-r1"
-            NEW_REV="1"
-            echo "ℹ️ Không tìm thấy Tag hợp lệ trước đó. Khởi tạo: $NEW_TAG"
-          else
-            # Lấy số revision hiện tại (Cắt bỏ phần 'v1.0-r')
-            REV="${LATEST_TAG#v1.0-r}"
-            
-            # Đảm bảo REV là một con số, nếu không thì ép về 0
-            if ! [[ "$REV" =~ ^[0-9]+$ ]]; then 
-              REV=0
-            fi
-            
-            NEW_REV=$((REV + 1))
-            NEW_TAG="v2.1.0-r${NEW_REV}"
-            echo "ℹ️ Tag cao nhất hiện tại: $LATEST_TAG. Tạo Tag mới: $NEW_TAG"
-          fi
-          
-          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_OUTPUT
-          echo "NEW_REV=$NEW_REV" >> $GITHUB_OUTPUT
-
       - name: "🏷️ Đặt Tên Artifact Tự Động Theo Yêu Cầu"
         id: set_name
         run: |
@@ -619,7 +640,7 @@ jobs:
           # Lưu FULL_KVER ra GITHUB_ENV để bước tạo Log xài
           echo "FULL_KVER=$FULL_KVER" >> $GITHUB_ENV
           
-          REV="${{ steps.calc_release.outputs.NEW_REV }}"
+          REV="${{ env.RELEASE_REV }}"
           
           # Áp dụng định dạng: PSD_{Kernel}_ReSukiSU_{Compression}_v{KSUVER}
           if [ "${{ inputs.lz4kd }}" = "On" ]; then
@@ -634,9 +655,9 @@ jobs:
           
           # Gắn thêm _SuSFS (nếu có) và _r{số_release}
           if [ "${{ inputs.SUSFS }}" = "On" ]; then
-            FINAL_NAME="${BASE_NAME}_SuSFS_v2.1.0_r${REV}"
+            FINAL_NAME="${BASE_NAME}_SuSFS_v2.2.0_r${REV}"
           else
-            FINAL_NAME="${BASE_NAME}_r${REV}"
+            FINAL_NAME="${BASE_NAME}_v2.2.0_r${REV}"
           fi
           
           echo "ARTIFACT_NAME=${FINAL_NAME}" >> $GITHUB_OUTPUT
@@ -651,8 +672,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_TAG="${{ steps.calc_release.outputs.NEW_TAG }}"
-          echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
+          NEW_TAG="${{ env.RELEASE_TAG }}"
           
           ZIP_NAME="${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
           cd AnyKernel3
@@ -714,7 +734,7 @@ jobs:
           ━━━━━━━━━━━━━━━━━━
           📱 *Máy:* ${{ inputs.FEIL }}
           🧠 *Chipset:* ${{ inputs.CPU }}
-          🐧 *Kernel:* ${{ inputs.KERNEL_VERSION }}
+          🐧 *Kernel:* ${{ env.FULL_KVER }}
           🛡️ *KSU Ver:* ${{ env.KSUVER }}
           🧩 *SuSFS:* ${{ inputs.SUSFS }}
           📦 *Trạng thái:* $STATUS
@@ -727,4 +747,13 @@ jobs:
             -d parse_mode="Markdown" \
             -d text="$MESSAGE"
           echo "✅ Đã gửi thông báo Telegram!"
-      
+
+      - name: "🗑️ Xóa Tag giữ chỗ nếu Build thất bại"
+        if: failure() || cancelled()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "${{ env.RELEASE_TAG }}" ]; then
+            echo "🗑️ Thu hồi Tag ${{ env.RELEASE_TAG }} do tiến trình lỗi hoặc bị hủy..."
+            git push --delete origin "${{ env.RELEASE_TAG }}" || true
+          fi
