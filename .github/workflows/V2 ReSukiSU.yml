@@ -297,7 +297,7 @@ jobs:
           echo "📦 BƯỚC 1: TẢI CÁC PATCH CẦN THIẾT TỪ GITHUB"
           echo "========================================================="
           if [ "${{ inputs.SUSFS }}" == "On" ]; then          
-            git clone https://github.com/cctv18/susfs4oki.git -b oki-${{ inputs.ANDROID_VERSION }}-${{ inputs.KERNEL_VERSION }}
+            git clone https://github.com/p0s3id0nVN/susfs4oki.git -b oki-${{ inputs.ANDROID_VERSION }}-${{ inputs.KERNEL_VERSION }}
           fi
           git clone https://github.com/p0s3id0n-ops/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
