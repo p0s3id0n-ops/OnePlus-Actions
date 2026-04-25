@@ -589,7 +589,7 @@ jobs:
           fi
           
           if [ "${{ inputs.SUSFS }}" = "On" ]; then
-            FINAL_NAME="${BASE_NAME}_SUSFS"
+            FINAL_NAME="${BASE_NAME}_SuSFS"
           else
             FINAL_NAME="${BASE_NAME}"
           fi
@@ -607,8 +607,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔍 Đang check Release Tag gần nhất..."
-          # Fetch repo depth 0 để có tags
-          LATEST_TAG=$(gh release list --limit 1 | awk '{print $1}')
+          
+          # ĐÃ SỬA: Thêm --repo ${{ github.repository }} để chỉ rõ đích đến
+          LATEST_TAG=$(gh release list --repo ${{ github.repository }} --limit 1 | awk '{print $1}')
           
           if [ -z "$LATEST_TAG" ]; then
             NEW_TAG="v1.0-r1"
@@ -630,7 +631,10 @@ jobs:
           cd ..
           
           echo "📦 Bắt đầu bắn lên Release..."
+          
+          # ĐÃ SỬA: Thêm --repo ${{ github.repository }} vào lệnh tạo Release
           gh release create "$NEW_TAG" ./AnyKernel3-${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip \
+            --repo ${{ github.repository }} \
             --title "🔥 OKI ReSukiSU Kernel - ${{ inputs.FEIL }} ($NEW_TAG)" \
             --notes "Bản build OKI tự động.
             - **CPU**: ${{ inputs.CPU }}
@@ -638,6 +642,7 @@ jobs:
             - **KSU Version**: ${{ env.KSUVER }}
             - **SUSFS**: ${{ inputs.SUSFS }}
             - **KPM**: ${{ inputs.KPM }}"
+            
           echo "✅ Release tạo thành công!"
 
       - name: "📱 Gửi Báo Cáo Sang Telegram"
