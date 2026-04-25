@@ -270,7 +270,7 @@ jobs:
             sed -i 's/${scm_version}//' kernel_platform/msm-kernel/scripts/setlocalversion
           fi
 
-      - name: "🛡️ Tích Hợp Baseband-guard (BBG)"
+      - name: "🛡️ Tích Hợp Baseband-Guard (BBG)"
         if: ${{ inputs.bbg == 'On' && inputs.KPM == 'Off' }}
         run: |
           set -e
@@ -290,7 +290,7 @@ jobs:
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
           echo "✅ ReSukiSU tích hợp thành công. KSU Version: $KSU_VERSION"
           
-      - name: "🧩 Xử Lý Cây Patch (Patch Logic Logic Group)"
+      - name: "🧩 Xử Lý Logic Patch (Patch Logic Logic Group)"
         run: |
           cd kernel_workspace
           echo "========================================================="
@@ -354,7 +354,7 @@ jobs:
           fi
           
           if [ "${{ inputs.lz4kd }}" == "On" ]; then
-            echo "🚀 [NHÁNH LZ4KD]: Kích hoạt sức mạnh nén LZ4KD Oplus..."
+            echo "🚀 [NHÁNH LZ4KD]: Kích hoạt siêu nén LZ4KD Oplus..."
             cp ../../SukiSU_patch/other/zram/zram_patch/${{ inputs.KERNEL_VERSION }}/lz4kd.patch ./
             patch -p1 -F 3 < lz4kd.patch || true
             cp ../../SukiSU_patch/other/zram/zram_patch/${{ inputs.KERNEL_VERSION }}/lz4k_oplus.patch ./
@@ -389,7 +389,7 @@ jobs:
             echo "⚙️ Bơm patch Fengchi..."
             dos2unix "fengchi_${{ inputs.FEIL }}.patch"
             patch -p1 -F 3 < "fengchi_${{ inputs.FEIL }}.patch"
-            echo "✅ Apply SCHED PATCH hoàn hảo!"
+            echo "✅ Apply SCHED PATCH thành công!"
           else
             sed -i '1iobj-y += hmbird_patch.o' drivers/Makefile
             wget https://github.com/Numbersf/Action-Build/raw/SukiSU-Ultra/patches/hmbird_patch.patch
@@ -415,7 +415,7 @@ jobs:
           fi
           
           if [ "${{ inputs.SUSFS }}" == "On" ]; then
-            echo "🛡️ Inject Flags SUSFS..."
+            echo "🛡️ Inject Flags SuSFS..."
             cat <<EOF >> $CONFIG_FILE
           CONFIG_KSU_SUSFS=y
           CONFIG_KSU_SUSFS_SUS_PATH=y
@@ -504,11 +504,11 @@ jobs:
           sed -i 's/check_defconfig//' ./common/build.config.gki
           echo "✅ Ghi Defconfig thành công!"
           
-      - name: "🔨 Bắt Đầu Dịch Mã (Build Kernel)"
+      - name: "🔨 Bắt Đầu Build Kernel"
         run: |
           echo "🔥 Nấu Kernel thôi..."
-          export KBUILD_BUILD_USER="xiaoxiaow"
-          export KBUILD_BUILD_HOST="xiaoxiaow_build"
+          export KBUILD_BUILD_USER="p0s3id0n"
+          export KBUILD_BUILD_HOST="p0s3id0n_build"
 
           if [ "${{ inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export KBUILD_BUILD_TIMESTAMP="Tue Mar 10 03:53:33 UTC 2026"
@@ -542,7 +542,7 @@ jobs:
           fi
           
           ccache -s
-          echo "✅ Nấu Kernel hoàn tất!"
+          echo "✅ Build Kernel hoàn tất!"
           
       - name: "🎁 Đóng Gói Với AnyKernel3"
         run: |
@@ -557,7 +557,7 @@ jobs:
             cp "$image_path" kernel_workspace/kernel_platform/out/Final-Image-Find/Image
           fi
          
-      - name: "🩹 Vá Kernel (Nhánh KPM)"
+      - name: "🩹 Patch Kernel (Nhánh KPM)"
         if: ${{ inputs.KPM == 'On' }}
         run: |
           echo "🔧 Đang chạy vá KPM..."
@@ -570,7 +570,7 @@ jobs:
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           echo "✅ Vá KPM hoàn tất!"
 
-      - name: "🔍 Tính Toán Phiên Bản Release (Tag & Rev)"
+      - name: "🔍 Chuẩn Bị Phiên Bản Release (Tag & Rev)"
         id: calc_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -654,7 +654,7 @@ jobs:
             
           echo "✅ Release tạo thành công!"
 
-      - name: "📱 Gửi Báo Cáo Sang Telegram"
+      - name: "📱 Gửi Thông Báo Đến Telegram"
         if: always()
         run: |
           STATUS="Thất bại ❌"
