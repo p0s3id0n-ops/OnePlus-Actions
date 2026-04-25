@@ -170,7 +170,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_BASE="v2.2.0"
+          TAG_BASE="v2.1.0"
           echo "🔍 Đang tìm Tag phù hợp cho $TAG_BASE..."
           
           git config user.name "github-actions[bot]"
@@ -655,9 +655,9 @@ jobs:
           
           # Gắn thêm _SuSFS (nếu có) và _r{số_release}
           if [ "${{ inputs.SUSFS }}" = "On" ]; then
-            FINAL_NAME="${BASE_NAME}_SuSFS_v2.2.0_r${REV}"
+            FINAL_NAME="${BASE_NAME}_SuSFS_v2.1.0_r${REV}"
           else
-            FINAL_NAME="${BASE_NAME}_v2.2.0_r${REV}"
+            FINAL_NAME="${BASE_NAME}_v2.1.0_r${REV}"
           fi
           
           echo "ARTIFACT_NAME=${FINAL_NAME}" >> $GITHUB_OUTPUT
