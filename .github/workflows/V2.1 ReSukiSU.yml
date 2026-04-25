@@ -583,7 +583,7 @@ jobs:
           
           if [ -z "$LATEST_TAG" ]; then
             # Nếu thật sự chưa có tag nào dạng v1.0-rX, ta bắt đầu từ v1.0-r1
-            NEW_TAG="v1.0-r1"
+            NEW_TAG="v2.1.0-r1"
             NEW_REV="1"
             echo "ℹ️ Không tìm thấy Tag hợp lệ trước đó. Khởi tạo: $NEW_TAG"
           else
@@ -596,7 +596,7 @@ jobs:
             fi
             
             NEW_REV=$((REV + 1))
-            NEW_TAG="v1.0-r${NEW_REV}"
+            NEW_TAG="v2.1.0-r${NEW_REV}"
             echo "ℹ️ Tag cao nhất hiện tại: $LATEST_TAG. Tạo Tag mới: $NEW_TAG"
           fi
           
