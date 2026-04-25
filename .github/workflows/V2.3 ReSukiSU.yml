@@ -59,7 +59,8 @@ on:
           - 'oneplus_pad_pro_b'
           - 'oneplus_turbo_6'
           - 'oneplus_turbo_6v'
-        default: 'oneplus_12_b'
+          - 'Oppo_X7_Ultra'
+        default: 'Oppo_X7_Ultra'
         
       ANDROID_VERSION:
         description: "🤖 Phiên bản Android KMI"
