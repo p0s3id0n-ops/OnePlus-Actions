@@ -512,8 +512,8 @@ jobs:
       - name: "🔨 Bắt Đầu Dịch Mã (Build Kernel)"
         run: |
           echo "🔥 Nấu Kernel thôi..."
-          export KBUILD_BUILD_USER="xiaoxiaow"
-          export KBUILD_BUILD_HOST="xiaoxiaow_build"
+          export KBUILD_BUILD_USER="p0s3id0n"
+          export KBUILD_BUILD_HOST="p0s3id0n_build"
 
           if [ "${{ inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export KBUILD_BUILD_TIMESTAMP="Tue Mar 10 03:53:33 UTC 2026"
@@ -547,7 +547,7 @@ jobs:
           fi
           
           ccache -s
-          echo "✅ Nấu Kernel hoàn tất!"
+          echo "✅ Build Kernel hoàn tất!"
           
       - name: "🎁 Đóng Gói Với AnyKernel3"
         run: |
